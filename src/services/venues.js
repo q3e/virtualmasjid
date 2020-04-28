@@ -1,18 +1,16 @@
 import Api from '@/services/api';
 
 function mapSort(sort, invert) {
-  let ordering = 'name';
+  let ordering = 'title';
 
-  if (sort === 'name') {
-    ordering = 'name';
-  } else if (sort === 'brewer') {
-    ordering = 'manufacturer__name';
-  } else if (sort === 'style') {
-    ordering = 'style__name';
-  } else if (sort === 'abv') {
-    ordering = 'abv';
+  if (sort === 'title') {
+    ordering = 'title';
+  } else if (sort === 'speaker') {
+    ordering = 'speaker';
+  } else if (sort === 'language') {
+    ordering = 'language';
   } else {
-    ordering = 'name';
+    ordering = 'title';
   }
 
   if (invert) {
@@ -21,19 +19,19 @@ function mapSort(sort, invert) {
   return ordering;
 }
 
-export function getBeers(sort, invert) {
-  return Api().get('/beers/', {
+export function getEvents(sort, invert) {
+  return Api().get('/events/', {
     params: {
-      on_tap: true,
+      on_event: true,
       o: mapSort(sort, invert),
     },
   });
 }
 
-export function searchBeers(query) {
-  return Api().get('/beers/', {
+export function searchEvents(query) {
+  return Api().get('/events/', {
     params: {
-      on_tap: true,
+      on_event: true,
       search: query,
     },
   });
@@ -43,8 +41,8 @@ export function getVenues() {
   return Api().get('/venues/');
 }
 
-export function getVenueBeers(venueId, sort, invert) {
-  return Api().get(`/venues/${venueId}/beers/`, {
+export function getVenueEvents(venueId, sort, invert) {
+  return Api().get(`/venues/${venueId}/events/`, {
     params: {
       o: mapSort(sort, invert),
     },

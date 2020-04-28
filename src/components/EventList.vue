@@ -1,5 +1,5 @@
 <template>
-<div class="beer-list">
+<div class="event-list">
   <!-- Off-canvas element  -->
   <nav id="my-menu">
     <ul>
@@ -23,7 +23,7 @@
 
       <p class="text-intro lead text-center">Find talks and classes on different subjects from different mosques</p>
       <div id="search" class="search-container" v-bind:class="{active: search_active}">
-        <div class="search-icon-container">
+<!--         <div class="search-icon-container">
           <div class="search-icon dark small">
             <div class="mug-top"></div>
             <div class="mug-sides"></div>
@@ -33,14 +33,14 @@
             </div>
           </div>
         </div>
-
+-->
         <input v-model="query" type="text"
                class="form-control search"
-               placeholder="Search beers, brewers, or styles"
-               aria-label="Search beers, brewers, or styles"
+               placeholder="Search titles, speakers, or status"
+               aria-label="Search titles, speakers, or status"
                @focus="search_active = true"
                @keyup.enter="onQueryEnter">
-          <button class="btn btn-clearsearch btn-secondary" type="button"
+          <button class="btn btn-clearsearch" type="button"
               @click="onSearchClose">
             <img src="/static/svg/close.svg" alt="close"/>
           </button>
@@ -50,7 +50,7 @@
       <vue-chosen v-model="selected_venue_id"
                   :options="venues"
                   label="name"
-                  placeholder="Select a taphouse">
+                  placeholder="Select a location">
       </vue-chosen>
     </div>
   </div>
@@ -60,7 +60,7 @@
   <div class="container-fluid">
     <div class="results-header">
       <h2 class="results-number">
-        <span class="beer-total">{{ beerCount }}</span> <span class="d-none">matching</span> beers on tap
+        <span class="event-total">{{ eventCount }}</span> <span class="d-none">matching</span> events
         <span v-if="selected_venue"> at <a class="header-venue" href="#" data-toggle="modal" data-target="#venueModal">{{ selected_venue.name }}</a></span>
       </h2>
       <div class="sort">
@@ -76,8 +76,8 @@
       </div>
     </div>
     <div class="container-list">
-      <ul id="beer-list" v-infinite-scroll="loadMore" infinite-scroll-disabled="busy">
-        <beer-item v-for="beer in beers" v-bind:key="beer.id" v-bind:beer="beer"></beer-item>
+      <ul id="event-list" v-infinite-scroll="loadMore" infinite-scroll-disabled="busy">
+        <event-item v-for="event in events" v-bind:key="event.id" v-bind:event="event"></event-item>
       </ul>
     </div>
   </div>
@@ -105,35 +105,34 @@ import axios from 'axios';
 import 'offside-js/dist/offside.css';
 import offside from 'offside-js';
 
-import { getVenues, getBeers, getVenueBeers, searchBeers } from '@/services/venues';
+import { getVenues, getEvents, getVenueEvents, searchEvents } from '@/services/venues';
 
-import BeerItem from './BeerItem';
+import EventItem from './EventItem';
 import VenueModal from './VenueModal';
 import VueChosen from './vue-chosen';
 
-export default {
-  name: 'beer-list',
+const view = {
+  name: 'event-list',
   components: {
-    BeerItem,
+    EventItem,
     VenueModal,
     VueChosen,
   },
   data() {
     return {
       query: undefined,
-      beerCount: 0,
-      beers: [],
-      venues: [{ name: 'Select a taproom', id: undefined }],
+      eventCount: 0,
+      events: [],
+      venues: [{ name: 'Select a location', id: undefined }],
       selected_venue_id: undefined,
       selected_venue: undefined,
       search_active: false,
       sort: [
-        { name: 'Name', sort: 'name' },
-        { name: 'Brewer', sort: 'brewer' },
-        { name: 'Style', sort: 'style' },
-        { name: 'ABV', sort: 'abv' }],
+        { name: 'Title', sort: 'title' },
+        { name: 'Speaker', sort: 'speaker' },
+        { name: 'Language', sort: 'language' }],
       invert_sort: false,
-      selected_sort: { name: 'Name', sort: 'name' },
+      selected_sort: { name: 'Title', sort: 'title' },
       showModal: false,
       next: undefined,
       busy: false,
@@ -170,7 +169,7 @@ export default {
       this.venues.push(...response.data.results);
     });
 
-    this.updateBeers();
+    this.updateEvents();
   },
   watch: {
     selected_venue_id() {
@@ -179,60 +178,61 @@ export default {
     },
     selected_venue() {
       if (!this.query) {
-        this.updateBeers();
+        this.updateEvents();
       }
     },
   },
   methods: {
     onQueryEnter() {
       this.selected_venue_id = undefined;
-      searchBeers(this.query).then(
+      searchEvents(this.query).then(
         (response) => {
-          this.beerCount = response.data.count;
-          this.beers = response.data.results;
+          this.eventCount = response.data.count;
+          this.events = response.data.results;
           this.next = response.data.next;
-          this.mungeBeers();
+          // this.mungeEvents();
         });
     },
     onSearchClose() {
       this.query = '';
       this.search_active = false;
-      this.updateBeers();
+      this.updateEvents();
     },
-    mungeBeers() {
-      for (let i = 0; i < this.beers.length; i += 1) {
-        this.beers[i].styleObj = {
-          '--background-color': this.beers[i].color_srm_html,
-        };
+    // mungeEvents() {
+    //   for (let i = 0; i < this.events.length; i += 1) {
+    //     this.events[i].styleObj = {
+    //       '--background-color': this.events[i].color_srm_html,
+    //     };
 
-        if (this.beers[i].untappd_metadata) {
-          if (this.beers[i].untappd_metadata.json_data) {
-            const rating = this.beers[i].untappd_metadata.json_data.rating_score;
-            this.beers[i].rating = Number(rating).toFixed(1);
-            this.beers[i].rating_count = this.beers[i].untappd_metadata.json_data.rating_count;
-          }
-        }
-        if (this.beers[i].abv) {
-          this.beers[i].abv_fixed = Number(this.beers[i].abv).toFixed(1);
-        }
-      }
-    },
-    updateBeers() {
+    //     if (this.events[i].untappd_metadata) {
+    //       if (this.events[i].untappd_metadata.json_data) {
+    //         const rating = this.events[i].untappd_metadata.json_data.rating_score;
+    //         this.events[i].rating = Number(rating).toFixed(1);
+    //         this.events[i].rating_count = this.events[i].untappd_metadata.json_data.rating_count;
+    //       }
+    //     }
+    //     if (this.events[i].abv) {
+    //       this.events[i].abv_fixed = Number(this.events[i].abv).toFixed(1);
+    //     }
+    //   }
+    // },
+    updateEvents() {
       if (this.selected_venue_id) {
-        getVenueBeers(this.selected_venue_id, this.selected_sort.sort, this.invert_sort).then(
+        getVenueEvents(this.selected_venue_id, this.selected_sort.sort, this.invert_sort).then(
           (response) => {
-            this.beerCount = response.data.count;
-            this.beers = response.data.results;
+            this.eventCount = response.data.count;
+            this.events = response.data.results;
             this.next = response.data.next;
-            this.mungeBeers();
+            // this.mungeEvents();
           });
       } else {
-        getBeers(this.selected_sort.sort, this.invert_sort).then(
+        getEvents(this.selected_sort.sort, this.invert_sort).then(
           (response) => {
-            this.beerCount = response.data.count;
-            this.beers = response.data.results;
+            this.eventCount = response.data.count;
+            this.events = response.data.results;
             this.next = response.data.next;
-            this.mungeBeers();
+            console.log(this);
+            // this.mungeEvents();
           });
       }
     },
@@ -241,13 +241,13 @@ export default {
         this.busy = true;
         axios.get(this.next).then((response) => {
           this.next = response.data.next;
-          this.beers = this.beers.concat(response.data.results);
-          this.mungeBeers();
+          this.events = this.events.concat(response.data.results);
+          // this.mungeEvents();
           this.busy = false;
         });
       }
     },
-    getVenueBeers(val) { this.selected_venue = val; },
+    getVenueEvents(val) { this.selected_venue = val; },
     onSortChange(newSort) {
       if (this.selected_sort.sort === newSort.sort) {
         this.invert_sort = !this.invert_sort;
@@ -255,10 +255,14 @@ export default {
         this.selected_sort = newSort;
         this.invert_sort = false;
       }
-      this.updateBeers();
+      this.updateEvents();
     },
   },
 };
+
+export default view;
+// eslint-disable-next-line
+console.log(view.data().events);
 </script>
 
 <style>
@@ -281,7 +285,7 @@ img {
   max-width:100%;
 }
 
-.beer-brewer, .beer-style {
+.event-speaker, .event-style {
   max-width:100%;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -648,7 +652,7 @@ select#taphouseSelect {
   margin:0;
 }
 
-.beer-total {
+.event-total {
   font-weight:700;
 }
 
@@ -720,44 +724,44 @@ select#taphouseSelect {
 
 
 
-#beer-list {
+#event-list {
   padding:0;
   list-style:none;
 }
 
-.beer {
+.event {
   position:relative;
   transition: all .1s ease-out;
 }
 
-.beer.active {
+.event.active {
   background:#edfcf6;
   box-shadow:0 1px 3px 1px rgba(60,64,67,.2), 0 2px 8px 4px rgba(60,64,67,.1);
   z-index:10;
   padding:.5rem 0 1rem;
 }
 
-.beer:hover, .beer:focus-within {
+.event:hover, .event:focus-within {
   background:#edfcf6;
   box-shadow:0 1px 3px 1px rgba(60,64,67,.2), 0 2px 8px 4px rgba(60,64,67,.1);
 }
 
-.beer.active:hover, .beer.active:focus-within {
+.event.active:hover, .event.active:focus-within {
   box-shadow:0 1px 3px 1px rgba(60,64,67,.2), 0 2px 8px 4px rgba(60,64,67,.1);
 }
 
-.beer-intro {
+.event-intro {
   display:flex;
   padding:1.25rem 0 0 1rem;
 }
 
 
-.beer-link, .beer-link:hover {
+.event-link, .event-link:hover {
   color:#31302c;
   text-decoration:none;
 }
 
-.beer-link::after {
+.event-link::after {
   content:" ";
   position:absolute;
   width: 100%;
@@ -769,7 +773,7 @@ select#taphouseSelect {
   z-index:5;
 }
 
-.beer-info {
+.event-info {
   flex:1;
   min-width:0;
   padding-bottom:1rem;
@@ -779,16 +783,16 @@ select#taphouseSelect {
   transition: box-shadow 0s .0s ease-out;
 }
 
-.beer.active .beer-info, .beer:hover .beer-info {
+.event.active .event-info, .event:hover .event-info {
   box-shadow:none;
   transition: box-shadow 0s ease-out;
 }
 
-li.beer:last-of-type .beer-info {
+li.event:last-of-type .event-info {
     box-shadow:none;
 }
 
-.beer-logo {
+.event-logo {
   overflow:hidden;
   float:left;
   width:4rem;
@@ -802,7 +806,7 @@ li.beer:last-of-type .beer-info {
 }
 
 /*
-.beer.active .beer-logo {
+.event.active .event-logo {
   width:6.5rem;
   height:6.5rem;
   margin-top: -2.25rem;
@@ -810,19 +814,19 @@ li.beer:last-of-type .beer-info {
 }
 */
 
-.beer-logo img {
+.event-logo img {
   width:100%;
   height:auto;
   object-fit:cover;
 }
 
-.beer-name, beer-brewer, .beer-style {
+.event-name, event-speaker, .event-style {
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
 
-.beer-name {
+.event-name {
   margin-bottom:.25rem;
   margin-top:-.075rem;
   padding-right:32px;
@@ -832,19 +836,19 @@ li.beer:last-of-type .beer-info {
   line-height:1.3;
 }
 
-.beer-brewer {
+.event-speaker {
   font-size:1.125rem;
   line-height:125%;
   margin-bottom: -0.125rem;
 }
 
 
-.beer-style {
+.event-style {
   font-size:.85rem;
   color:#606060;
 }
 
-.beer-style:before {
+.event-style:before {
   content:" ";
   background:#e5e5e5;
   display:inline-block;
@@ -854,18 +858,18 @@ li.beer:last-of-type .beer-info {
   border-radius:50%;
 }
 
-.beer-abv:before {
+.event-abv:before {
   content:" - "
 }
 
 
 
-.beer.active .beer-name, .beer.active .beer-brewer, .beer.active .beer-style {
+.event.active .event-name, .event.active .event-speaker, .event.active .event-style {
   overflow:visible;
   white-space:normal;
 }
 /*
-.beer-rating {
+.event-rating {
 position: absolute;
     top: 1.125rem;
     right: .75rem;
@@ -883,7 +887,7 @@ position: absolute;
     padding-right: .125rem;
 }
 */
-.beer-rating {
+.event-rating {
   position: absolute;
   top: .875rem;
   right: .5rem;
@@ -902,17 +906,17 @@ position: absolute;
   padding-top:.325rem;
   color: #8F6400;
 }
-.beer-details-container {
+.event-details-container {
   position:relative;
 }
 
 
-.beer-details {
+.event-details {
   display:flex;
   padding:1rem;
 }
 
-.beer-details a {
+.event-details a {
   position:relative;
   z-index:10;
 }
@@ -1484,7 +1488,7 @@ This file is generated by `grunt build`, do not edit it by hand.
     height:2rem;
     margin:.5rem;
   }
-  .beer-details-container {
+  .event-details-container {
   }
   .search-icon.small {
     font-size:4px;
@@ -1532,24 +1536,24 @@ This file is generated by `grunt build`, do not edit it by hand.
     background-position: 90% 50%;
   }
 
-  .beer-info {
+  .event-info {
     display:flex;
     flex-direction: column;
     flex-wrap: wrap;
     height: 5.5rem;
   }
 
-  .beer-link {
+  .event-link {
     width: 50%;
     flex-basis: 100%;
   }
 
-   .beer-brewer, .beer-style {
+   .event-speaker, .event-style {
     width: 50%;
     flex-basis: auto;
   }
 
-  .beer-brewer {
+  .event-speaker {
     padding-right: 2.5rem;
     margin-bottom: .25rem;
   }
