@@ -68,7 +68,7 @@
         <div class="sort-options z-3">
           <div class="sort-options-header">Sort by:</div>
           <ul>
-            <li v-for="s in sort">
+            <li v-for="(s, i) in sort" :key="i">
               <a @click="onSortChange(s)" v-bind:class="{selected: s.name === selected_sort.name }">{{ s.name }}</a>
             </li>
           </ul>
