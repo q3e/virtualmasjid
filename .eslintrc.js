@@ -18,11 +18,11 @@ module.exports = {
     // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention
     // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
     'plugin:vue/recommended',
-    'plugin:prettier/recommended',
+    // 'plugin:prettier/recommended',
   ],
 
   // required to lint *.vue files
-  plugins: ['vue'],
+  plugins: ['vue', 'import'],
   // check if imports actually resolve
   settings: {
     'import/resolver': {
@@ -33,7 +33,7 @@ module.exports = {
   },
   // add your custom rules here
   rules: {
-    semi: [2, 'never'],
+    semi: [1, 'never'],
     indent: ['error', 2],
     'vue/max-attributes-per-line': 'off',
     'no-console': 'off',
