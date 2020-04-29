@@ -19,7 +19,7 @@
       <p class="lead">HSV.beer is an open-source project helping Rocket City residents and visitors find draft beer at the many excellent breweries, bars, and retailers in the Huntsville area.</p>
       <p>Taprooms are constantly rotating kegs. This can make it difficult to find out who's serving your favorite beer.  And once you arrive, those novel-length menus can be daunting when you're looking for a particular style or brewer.</p>
       <p>HSV.beer allows you to easily search the draft beer inventory of retailers all across the Huntsville area.  See what's available at a particular taproom, or search all of Huntsville for a particular beer, manufacturer, or style.</p>
-      
+
       <!--
       <div class="card bg-light mb-4">
         <div class="card-body">
@@ -29,14 +29,14 @@
         </div>
       </div>
       -->
-    
+
       <div class="alert alert-primary" role="alert">
         <strong>HSV.beer is currently in beta.</strong>
       </div>
-    
+
       <h2>How it works</h2>
       <p>Most taprooms (retailers that serve draft beer) manage their inventory using software such as DigitalPour or Untappd. HSV.beer uses the APIs provided by these services, as well as custom-built parsers, to query the inventory of each taproom and return the results in one easy to read, searchable, sortable database, regardless of the inventory platform used.</p>
-      
+
       <h3 class="h4">Don't see your favorite taproom?</h3>
       <p>We are only able to track the inventory of taprooms that make their taplist available online. If a Huntsville-area taproom does use digital inventory software and isn't listed on HSV.beer, it's likely because we don't yet have access to their taplist.</p>
       <p><a href="mailto:getlisted@hsv.beer">List your taproom on hsv.beer</a></p>
@@ -375,11 +375,11 @@ footer a {
 }
 
 @media (min-width:880px) {
-  
+
   .navbar-logo {
     padding-top:1.25rem;
   }
-  
+
   .text-intro {
     padding-bottom:1.25rem;
   }

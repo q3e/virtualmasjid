@@ -1,22 +1,22 @@
-import Api from '@/services/api';
+import Api from '@/services/api'
 
 function mapSort(sort, invert) {
-  let ordering = 'title';
+  let ordering = 'title'
 
   if (sort === 'title') {
-    ordering = 'title';
+    ordering = 'title'
   } else if (sort === 'speaker') {
-    ordering = 'speaker';
+    ordering = 'speaker'
   } else if (sort === 'language') {
-    ordering = 'language';
+    ordering = 'language'
   } else {
-    ordering = 'title';
+    ordering = 'title'
   }
 
   if (invert) {
-    ordering = `-${ordering}`;
+    ordering = `-${ordering}`
   }
-  return ordering;
+  return ordering
 }
 
 export function getEvents(sort, invert) {
@@ -25,7 +25,7 @@ export function getEvents(sort, invert) {
       on_event: true,
       o: mapSort(sort, invert),
     },
-  });
+  })
 }
 
 export function searchEvents(query) {
@@ -34,11 +34,11 @@ export function searchEvents(query) {
       on_event: true,
       search: query,
     },
-  });
+  })
 }
 
 export function getVenues() {
-  return Api().get('/venues/');
+  return Api().get('/venues/')
 }
 
 export function getVenueEvents(venueId, sort, invert) {
@@ -46,6 +46,5 @@ export function getVenueEvents(venueId, sort, invert) {
     params: {
       o: mapSort(sort, invert),
     },
-  },
-  );
+  })
 }
